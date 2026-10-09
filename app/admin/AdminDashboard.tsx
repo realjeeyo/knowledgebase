@@ -76,6 +76,14 @@ function effectiveVisibility(a: Pick<AdminArticle, 'visibility' | 'subcategory_v
   return a.visibility ?? a.subcategory_visibility ?? a.category_visibility ?? 'public'
 }
 
+interface AdminUser {
+  id: number
+  name: string
+  email: string
+  role: string
+  created_at: string
+}
+
 type SyncTier = 'domain' | 'internal' | 'client' | 'confidential'
 
 interface SyncTarget {
@@ -115,12 +123,26 @@ function Toast({ message, type, onClose }: { message: string; type: 'success' | 
 
 // ─── Confirm dialog (§9: 440 confirm) ─────────────────────────────────────────
 
-function ConfirmDialog({ message, onConfirm, onCancel }: { message: string; onConfirm: () => void; onCancel: () => void }) {
+function ConfirmDialog({
+  title = 'Confirm delete',
+  message,
+  confirmLabel = 'Delete',
+  confirmIcon = 'trash-can',
+  onConfirm,
+  onCancel,
+}: {
+  title?: string
+  message: string
+  confirmLabel?: string
+  confirmIcon?: string
+  onConfirm: () => void
+  onCancel: () => void
+}) {
   return (
     <div className="na-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
       <div className="na-modal na-modal--confirm">
         <div className="na-modal__head">
-          <h3 id="confirm-title" className="na-modal__title">Confirm delete</h3>
+          <h3 id="confirm-title" className="na-modal__title">{title}</h3>
           <button type="button" onClick={onCancel} className="na-modal__close" aria-label="Close">
             <Icon name="xmark" size={14} />
           </button>
@@ -132,8 +154,8 @@ function ConfirmDialog({ message, onConfirm, onCancel }: { message: string; onCo
         <div className="na-modal__foot">
           <button type="button" onClick={onCancel} className="nv-btn nv-btn--secondary">Cancel</button>
           <button type="button" onClick={onConfirm} className="nv-btn nv-btn--danger">
-            <Icon name="trash-can" size={16} />
-            Delete
+            <Icon name={confirmIcon} size={16} />
+            {confirmLabel}
           </button>
         </div>
       </div>
@@ -997,6 +1019,181 @@ function CategorySubcategoriesPanel({ categorySlug, categoryVisibility, onToast 
   )
 }
 
+// ─── Reset password modal (§9: 520) ───────────────────────────────────────────
+
+function ResetPasswordModal({ user, newPassword, onClose }: { user: AdminUser; newPassword: string; onClose: () => void }) {
+  const [copied, setCopied] = useState(false)
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(newPassword)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // Clipboard may be unavailable (e.g. non-HTTPS); the password is still shown for manual copy.
+    }
+  }
+
+  return (
+    <div className="na-overlay" role="dialog" aria-modal="true" aria-labelledby="reset-title">
+      <div className="na-modal">
+        <div className="na-modal__head">
+          <div>
+            <h3 id="reset-title" className="na-modal__title">New password for {user.name}</h3>
+            <p className="na-modal__sub">{user.email}</p>
+          </div>
+          <button type="button" onClick={onClose} className="na-modal__close" aria-label="Close">
+            <Icon name="xmark" size={14} />
+          </button>
+        </div>
+        <div className="na-modal__body">
+          <p>This password is shown <strong>once</strong>. Copy it now and share it with them through a secure channel — it can&rsquo;t be retrieved again after you close this dialog.</p>
+          <div className="na-password-box">
+            <code>{newPassword}</code>
+            <button type="button" onClick={copy} className="nv-btn nv-btn--secondary nv-btn--sm">
+              {copied ? <Icon name="circle-check" size={14} /> : null}
+              {copied ? 'Copied' : 'Copy'}
+            </button>
+          </div>
+        </div>
+        <div className="na-modal__foot">
+          <button type="button" onClick={onClose} className="nv-btn">Done</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Users Tab ────────────────────────────────────────────────────────────────
+
+function UsersTab({ onToast }: { onToast: (msg: string, type: 'success' | 'error') => void }) {
+  const [users, setUsers] = useState<AdminUser[]>([])
+  const [loading, setLoading] = useState(true)
+  const [query, setQuery] = useState('')
+  const [confirmReset, setConfirmReset] = useState<AdminUser | null>(null)
+  // The user whose password is being reset — that row shows the spinner
+  const [resettingId, setResettingId] = useState<number | null>(null)
+  const [resetResult, setResetResult] = useState<{ user: AdminUser; newPassword: string } | null>(null)
+
+  const load = useCallback(async (q: string) => {
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/admin/users${q ? `?q=${encodeURIComponent(q)}` : ''}`)
+      const data = await res.json()
+      setUsers(Array.isArray(data) ? data : [])
+    } catch {
+      onToast('Failed to load users.', 'error')
+    } finally {
+      setLoading(false)
+    }
+  }, [onToast])
+
+  useEffect(() => {
+    const t = setTimeout(() => load(query), 250)
+    return () => clearTimeout(t)
+  }, [query, load])
+
+  async function doReset(user: AdminUser) {
+    setConfirmReset(null)
+    setResettingId(user.id)
+    try {
+      const res = await fetch(`/api/admin/users/${user.id}/reset-password`, { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) { onToast(data.error || 'Reset failed.', 'error'); return }
+      setResetResult({ user: data.user, newPassword: data.newPassword })
+    } catch {
+      onToast('Network error.', 'error')
+    } finally {
+      setResettingId(null)
+    }
+  }
+
+  return (
+    <div>
+      <div className="na-toolbar">
+        <div className="na-toolbar__left">
+          <span>{users.length} {users.length === 1 ? 'user' : 'users'}</span>
+        </div>
+        <div className="na-field na-field--sm" style={{ maxWidth: 260 }}>
+          <input
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Search by name or email"
+            className="na-input"
+            aria-label="Search users"
+          />
+        </div>
+      </div>
+
+      {loading ? (
+        <Loading />
+      ) : users.length === 0 ? (
+        <p className="na-empty">No users found.</p>
+      ) : (
+        <div className="na-card na-card--table">
+          <table className="na-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Role</th>
+                <th className="na-table__r" aria-label="Actions"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map(u => (
+                <tr key={u.id} className="na-row">
+                  <td>
+                    <span className="na-table__title">{u.name}</span>
+                    <p className="na-table__desc">{u.email}</p>
+                  </td>
+                  <td>
+                    <span className="na-badge na-badge--info">{u.role}</span>
+                  </td>
+                  <td>
+                    <div className="na-actions">
+                      <button
+                        type="button"
+                        onClick={() => setConfirmReset(u)}
+                        disabled={resettingId !== null}
+                        aria-busy={resettingId === u.id}
+                        className="nv-btn nv-btn--ghost nv-btn--sm"
+                      >
+                        {resettingId === u.id
+                          ? <span className="nv-spin nv-spin--sm" aria-hidden="true" />
+                          : <Icon name="lock" size={14} />}
+                        {resettingId === u.id ? 'Resetting…' : 'Reset password'}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {confirmReset && (
+        <ConfirmDialog
+          title="Confirm password reset"
+          message={`Reset the password for "${confirmReset.name}" (${confirmReset.email})? Their current password will stop working immediately, and you'll need to share the new one with them yourself.`}
+          confirmLabel="Reset password"
+          confirmIcon="lock"
+          onConfirm={() => doReset(confirmReset)}
+          onCancel={() => setConfirmReset(null)}
+        />
+      )}
+
+      {resetResult && (
+        <ResetPasswordModal
+          user={resetResult.user}
+          newPassword={resetResult.newPassword}
+          onClose={() => setResetResult(null)}
+        />
+      )}
+    </div>
+  )
+}
+
 // ─── Articles Tab ─────────────────────────────────────────────────────────────
 
 function ArticlesTab({
@@ -1394,13 +1591,14 @@ function ArticlesTab({
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 
-const TABS: { key: 'categories' | 'articles'; label: string }[] = [
+const TABS: { key: 'categories' | 'articles' | 'users'; label: string }[] = [
   { key: 'categories', label: 'Categories' },
   { key: 'articles',   label: 'Articles' },
+  { key: 'users',      label: 'Users' },
 ]
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<'categories' | 'articles'>('categories')
+  const [activeTab, setActiveTab] = useState<'categories' | 'articles' | 'users'>('categories')
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [pendingCount, setPendingCount] = useState(0)
 
@@ -1430,6 +1628,7 @@ export default function AdminDashboard() {
 
       {activeTab === 'categories' && <CategoriesTab onToast={showToast} />}
       {activeTab === 'articles' && <ArticlesTab onToast={showToast} onPendingCount={setPendingCount} />}
+      {activeTab === 'users' && <UsersTab onToast={showToast} />}
 
       {toast && (
         <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />

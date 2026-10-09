@@ -12,6 +12,11 @@ export default function TopicGrid({ categories }: { categories: Category[] }) {
     <div className="nw-services">
       {categories.map(c => (
         <Link key={c.slug} href={`/categories/${c.slug}`} className="nw-service">
+          <span className="nw-service__link" aria-hidden="true" />
+          <span className="nw-service__grain" aria-hidden="true" />
+          <span className="nw-service__glow" aria-hidden="true" />
+          <span className="nw-service__s1" aria-hidden="true" />
+          <span className="nw-service__s2" aria-hidden="true" />
           <Icon name={c.icon} size={44} className="nw-service__icon" />
           <h3>
             {c.title}

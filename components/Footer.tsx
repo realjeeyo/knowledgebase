@@ -4,8 +4,9 @@ import Icon from './Icon'
 
 // Footer 512 · Iron Grey (Figma 656:2). Social marks are the four brand marks from the
 // Figma footer component (public/social/) — the one permitted non-library glyph set.
-// Copyright follows brand law ("© Nuvho Systems Pty Ltd"), not the wireframe's
-// "© Nuvho Pty Ltd". No region switcher — the KB has no regional content.
+// Copyright follows brand law ("© Nuvho Holdings Pty Ltd", nuvho-brand v4), not the
+// wireframe's "© Nuvho Pty Ltd". No AU / UK / IE region switcher — the KB has no
+// regional content (flagged deviation from the nuvho.com footer).
 const social = [
   { label: 'LinkedIn',  href: 'https://linkedin.com/company/nuvho', file: 'linkedin.svg',  size: 19 },
   { label: 'Facebook',  href: 'https://facebook.com/nuvho',         file: 'facebook.svg',  size: 20 },
@@ -71,7 +72,7 @@ export default function Footer() {
         <div className="nw-footer__rule" />
 
         <div className="nw-footer__legal">
-          <span>© Nuvho Systems Pty Ltd {new Date().getFullYear()}</span>
+          <span>© Nuvho Holdings Pty Ltd {new Date().getFullYear()}</span>
           <div>
             <a href="https://nuvho.com/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
             <a href="https://nuvho.com/terms" target="_blank" rel="noopener noreferrer">Terms &amp; Conditions</a>

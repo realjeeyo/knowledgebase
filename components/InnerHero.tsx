@@ -22,22 +22,26 @@ export default function InnerHero({ title, lede, crumbs, tags, meta, children, h
 
   return (
     <section className={classes}>
-      {image ? (
-        <>
-          <div className="nw-hero__veil" aria-hidden="true" />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="nw-hero__photo" src={image.src} srcSet={image.srcSet} sizes="100vw" alt={image.alt} />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="nw-hero__art" src="/hero/art-overlay.svg" alt="" aria-hidden="true" />
-        </>
-      ) : (
-        <>
-          <span className="nv-sheet nv-sheet--1" aria-hidden="true" />
-          <span className="nv-sheet nv-sheet--2" aria-hidden="true" />
-          <span className="nv-sheet nv-sheet--focal" aria-hidden="true" />
-        </>
-      )}
-      <div className="nw-hero__scrim" aria-hidden="true" />
+      {/* Decorative layers clip inside their own box, so the hero itself doesn't clip —
+          the search suggestions list can then hang below the hero's bottom edge. */}
+      <div className="nw-hero__bg" aria-hidden="true">
+        {image ? (
+          <>
+            <div className="nw-hero__veil" aria-hidden="true" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="nw-hero__photo" src={image.src} srcSet={image.srcSet} sizes="100vw" alt={image.alt} />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="nw-hero__art" src="/hero/art-overlay.svg" alt="" aria-hidden="true" />
+          </>
+        ) : (
+          <>
+            <span className="nv-sheet nv-sheet--1" aria-hidden="true" />
+            <span className="nv-sheet nv-sheet--2" aria-hidden="true" />
+            <span className="nv-sheet nv-sheet--focal" aria-hidden="true" />
+          </>
+        )}
+        <div className="nw-hero__scrim" aria-hidden="true" />
+      </div>
       <div className="nw-wrap nw-hero__inner">
         {crumbs && <div className="nw-hero__crumb"><Breadcrumb items={crumbs} /></div>}
         {tags && <div className="nw-hero__tags">{tags}</div>}

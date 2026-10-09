@@ -40,3 +40,20 @@ export interface Category {
   /** Top of the inheritance chain — always an explicit value, defaults to 'public'. */
   visibility: Visibility
 }
+
+/** A published article plus its topic names, as indexed by the fuzzy search (lib/search.ts). */
+export interface SearchDocument {
+  article: Article
+  categoryTitle: string
+  subcategoryTitle: string
+}
+
+/** A search-as-you-type match — the lightweight payload of /api/search?suggest=1. */
+export interface SearchSuggestion {
+  title: string
+  description: string
+  categorySlug: string
+  slug: string
+  categoryTitle: string
+  isPrivate: boolean
+}

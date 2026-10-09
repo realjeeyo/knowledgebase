@@ -30,6 +30,7 @@ export default function Header({ user, topics }: Props) {
   const [megaOpen, setMegaOpen] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [drawerTopics, setDrawerTopics] = useState(true)
+  const [signingOut, setSigningOut] = useState(false)
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const isStaff = !!user?.email.endsWith('@nuvho.com')
@@ -57,7 +58,13 @@ export default function Header({ user, topics }: Props) {
   }, [])
 
   async function handleLogout() {
-    await fetch('/api/auth/logout', { method: 'POST' })
+    // Stays true until the refreshed header (signed out) replaces these buttons
+    setSigningOut(true)
+    const res = await fetch('/api/auth/logout', { method: 'POST' }).catch(() => null)
+    if (!res?.ok) {
+      setSigningOut(false)
+      return
+    }
     closeAll()
     router.push('/')
     router.refresh()
@@ -96,8 +103,9 @@ export default function Header({ user, topics }: Props) {
           {user ? (
             <>
               <span className="nw-header__user">Hello, {firstName}</span>
-              <button type="button" onClick={handleLogout} className="nv-btn nv-btn--secondary nv-btn--header">
-                Sign out
+              <button type="button" onClick={handleLogout} disabled={signingOut} aria-busy={signingOut} className="nv-btn nv-btn--secondary nv-btn--header">
+                {signingOut && <span className="nv-spin nv-spin--sm" aria-hidden="true" />}
+                {signingOut ? 'Signing out…' : 'Sign out'}
               </button>
             </>
           ) : (
@@ -115,7 +123,7 @@ export default function Header({ user, topics }: Props) {
           aria-label={drawerOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={drawerOpen}
         >
-          <Icon name={drawerOpen ? 'xmark' : 'bars'} size={18} onDark />
+          <Icon name={drawerOpen ? 'xmark' : 'bars'} size={24} />
         </button>
       </div>
 
@@ -191,7 +199,10 @@ export default function Header({ user, topics }: Props) {
             {user ? (
               <>
                 <span className="nw-header__user">Hello, {firstName}</span>
-                <button type="button" onClick={handleLogout} className="nv-btn nv-btn--secondary">Sign out</button>
+                <button type="button" onClick={handleLogout} disabled={signingOut} aria-busy={signingOut} className="nv-btn nv-btn--secondary">
+                  {signingOut && <span className="nv-spin nv-spin--sm" aria-hidden="true" />}
+                  {signingOut ? 'Signing out…' : 'Sign out'}
+                </button>
               </>
             ) : (
               <>

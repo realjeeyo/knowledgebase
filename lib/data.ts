@@ -1,5 +1,5 @@
 import pool from './db'
-import { Article, Category, Subcategory, Visibility } from './types'
+import { Article, Category, SearchDocument, Subcategory, Visibility } from './types'
 
 // ─── DB row types ────────────────────────────────────────────────────────────
 
@@ -36,6 +36,8 @@ interface ArticleRow {
   visibility: Visibility | null
   category_visibility: Visibility
   subcategory_visibility: Visibility | null
+  category_title: string
+  subcategory_title: string
 }
 
 // Article select fragment shared by every article query below — joins in the
@@ -45,7 +47,8 @@ const ARTICLE_SELECT = `
          to_char(a.updated_at, 'Mon DD, YYYY') AS updated_at,
          a.read_time, a.featured, a.status, a.visibility,
          c.visibility AS category_visibility,
-         s.visibility AS subcategory_visibility
+         s.visibility AS subcategory_visibility,
+         c.title AS category_title, s.title AS subcategory_title
   FROM nuvho_kb.articles a
   JOIN nuvho_kb.categories c ON c.slug = a.category_slug
   JOIN nuvho_kb.subcategories s ON s.slug = a.subcategory_slug
@@ -233,19 +236,18 @@ export async function getFeaturedArticles(limit = 4): Promise<Article[]> {
   return result.rows.map(mapArticle)
 }
 
-/** Full-text search across PUBLISHED articles. */
-export async function searchArticles(query: string): Promise<Article[]> {
-  if (!query.trim()) return []
+/** Every PUBLISHED article with its topic names — the corpus lib/search.ts fuzzy-indexes. */
+export async function getSearchCorpus(): Promise<SearchDocument[]> {
   const result = await pool.query<ArticleRow>(
     `${ARTICLE_SELECT}
-     WHERE (a.title ILIKE $1 OR a.description ILIKE $1) AND a.status = 'published'
-     ORDER BY
-       CASE WHEN a.title ILIKE $1 THEN 0 ELSE 1 END,
-       a.title
-     LIMIT 50`,
-    [`%${query}%`]
+     WHERE a.status = 'published'
+     ORDER BY a.category_slug, a.sort_order, a.title`
   )
-  return result.rows.map(mapArticle)
+  return result.rows.map(row => ({
+    article: mapArticle(row),
+    categoryTitle: row.category_title,
+    subcategoryTitle: row.subcategory_title,
+  }))
 }
 
 /** Category slugs for generateStaticParams. */

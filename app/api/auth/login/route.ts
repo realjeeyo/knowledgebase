@@ -19,6 +19,13 @@ export async function POST(req: NextRequest) {
     const user = result.rows[0]
 
     // Constant-time comparison — same error for unknown email vs wrong password
+    // Accounts created by Microsoft sign-in have no password until an admin resets one
+    if (user && !user.password_hash) {
+      return NextResponse.json(
+        { error: 'This account signs in with Microsoft. Use “Sign in with Microsoft” below.' },
+        { status: 401 }
+      )
+    }
     const valid = user ? await bcrypt.compare(password, user.password_hash) : false
     if (!user || !valid) {
       return NextResponse.json({ error: 'Invalid email or password.' }, { status: 401 })

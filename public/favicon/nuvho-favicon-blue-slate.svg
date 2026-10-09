@@ -1,0 +1,22 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#c0)"><g clip-path="url(#c1)">
+<rect width="512" height="512" rx="256" fill="url(#ground)"/>
+<g filter="url(#blur)"><ellipse cx="430" cy="90" rx="220" ry="190" fill="url(#glow)"/></g>
+<rect x="236" y="-84" width="340" height="330" rx="80" fill="url(#sheet1)"/>
+<rect x="332" y="16" width="250" height="240" rx="60" fill="url(#sheet2)"/>
+</g>
+<path d="M248.059 76.1475C196.269 78.4619 148.222 102.876 115.622 143.45C85.0317 181.513 71.3172 229.956 77.3876 278.546C83.4315 326.857 109.115 370.857 148.473 400.283C185.834 428.228 232.228 440.448 278.741 434.59C324.659 428.823 366.966 405.111 396.233 368.741C427.828 329.489 441.424 279.405 434.057 229.414C425.501 171.422 388.391 120.65 335.477 94.5173C308.418 81.1598 278.159 74.7985 248.059 76.1475ZM266.904 97.3475C281.928 98.4848 295.51 101.289 308.762 105.983C351.149 121.007 385.164 153.105 402.701 194.632C418.65 232.429 419.126 275.901 403.983 314.214C381.911 370.051 330.081 408.959 270.607 414.355C265.278 414.844 263.849 414.897 255.994 414.897C248.125 414.897 246.762 414.844 241.314 414.355C191.957 409.898 147.098 382.046 120.674 339.448C88.2719 287.195 89.1844 220.315 122.988 168.975C151.356 125.887 197.79 99.4503 249.249 97.1094C251.973 96.9904 264.339 97.1491 266.904 97.3475Z" fill="white"/>
+<path d="M139.784 166.079C134.613 166.833 130.698 170.589 129.812 175.654C129.653 176.553 129.627 188.601 129.653 257.716L129.693 338.72L129.971 339.646C131.452 344.566 134.996 347.66 139.903 348.322C145.669 349.089 151.356 344.989 152.573 339.183C152.745 338.363 152.771 334.594 152.771 310.537V282.844H355.381L355.447 338.588L355.751 339.646C357.775 346.788 365.287 350.358 371.886 347.317C375.523 345.624 378.062 342.066 378.525 337.966C378.631 337.12 378.657 319.372 378.631 280.265L378.591 223.793L378.3 222.775C377.639 220.434 376.938 219.165 375.496 217.617C373.103 215.065 370.458 213.901 367.019 213.901C361.65 213.901 357.219 217.326 355.738 222.603L355.447 223.661L355.381 264.064H152.771V176.024L152.454 174.754C151.025 169.107 145.391 165.259 139.784 166.079Z" fill="white"/>
+<path d="M178.587 212.354C171.617 213.438 168.416 221.823 172.966 227.02C173.588 227.734 197.604 249.543 199.086 250.733C201.731 252.876 205.487 253.233 208.714 251.659C209.97 251.051 211.874 249.212 212.509 247.995C214.123 244.901 213.871 241.105 211.874 238.354C211.398 237.706 186.099 214.721 184.948 213.888C183.229 212.658 180.65 212.023 178.587 212.354Z" fill="white"/>
+</g>
+<defs>
+<filter id="blur" x="170" y="-140" width="520" height="460" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="20"/></filter>
+<linearGradient id="ground" x1="0" y1="512" x2="512" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0.145" stop-color="#28687F"/><stop offset="0.557" stop-color="#28687F"/><stop offset="0.855" stop-color="#3E7F96"/></linearGradient>
+<radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(430 90) scale(220 190)">
+<stop stop-color="#AAD2D6" stop-opacity="0.5"/><stop offset="0.5" stop-color="#6BA1BF" stop-opacity="0.18"/><stop offset="1" stop-color="#3E7F96" stop-opacity="0"/></radialGradient>
+<linearGradient id="sheet1" x1="576" y1="-84" x2="246.147" y2="255.849" gradientUnits="userSpaceOnUse"><stop stop-color="#80B9BF" stop-opacity="0.2"/><stop offset="1" stop-color="#3E7F96" stop-opacity="0"/></linearGradient>
+<linearGradient id="sheet2" x1="582" y1="16" x2="342.2" y2="265.792" gradientUnits="userSpaceOnUse"><stop stop-color="#AAD2D6" stop-opacity="0.26"/><stop offset="1" stop-color="#6BA1BF" stop-opacity="0.03"/></linearGradient>
+<clipPath id="c0"><rect width="512" height="512" fill="white"/></clipPath>
+<clipPath id="c1"><rect width="512" height="512" rx="256" fill="white"/></clipPath>
+</defs>
+</svg>

@@ -7,15 +7,17 @@
    ----------------------------------------------------------------------------
    Source of truth for LAYOUT: Figma "Nuvho Website Redesign — Wireframes v1.0"
    (tfzYTVq6WUGyxCwv2xBTPq), page "Top Pages – AU & Everywhere else".
-   Source of truth for TOKENS / TYPE / ICONS / COPYRIGHT: nuvho-brand v3 and
-   nuvho-web-design v1.0.0. Where the two disagree, layout follows the wireframe
-   and tokens follow the brand law (decision 2026-09-22).
+   Source of truth for TOKENS / TYPE / ICONS / COPYRIGHT: nuvho-brand v4.0.0 and
+   nuvho-web-design v2.0.0 (Brand Book 2026). Where the two disagree, layout follows
+   the wireframe and tokens follow the brand law (decision 2026-09-22).
+   Audience: Client — Blue Slate lead (decision 2026-10-07). One Blend spotlight per
+   page with the 120px house curve: the contact band on Home.
 
-   Fonts: Comfortaa + Raleway are downloaded at build time and self-hosted by
-   next/font (app/layout.tsx) — there is NO runtime Google Fonts request.
+   Fonts: the brand's own Comfortaa + Raleway variable files, self-hosted by
+   next/font/local (app/fonts, app/layout.tsx) — no Google Fonts at all.
 
    Prefixes:  .nv-*  primitives (buttons, icons)   .nw-*  marketing/site sections
-              .na-*  admin (browser-app law §3–§9)  .nv-auth*  login/signup (§11)
+              .na-*  admin (app component law, Ch.04)  .nv-auth*  login/signup (§11)
    Every value marked "not in Figma" is a proposal, not a locked value.
    ========================================================================== */
 
@@ -134,12 +136,11 @@
 .nv-btn--ondark-alt { background: transparent; color: var(--nv-white); border: 1.25px solid var(--nv-white); }
 .nv-btn--ondark-alt:hover:not(:disabled) { background: rgba(255,255,255,.12); }
 
-/* web sizes — website-anatomy §6 */
+/* web sizes — nuvho-web-design v2 §3 web button set (h48 / 54 / 56); apps keep the h40 base */
 .nv-btn--sm     { height: 32px; padding: 0 16px; font-size: 13px; gap: 8px; }  /* compact, table rows — extension, flagged */
-.nv-btn--lg     { height: 48px; padding: 0 28px; font-size: 15px; }             /* in-section secondary 48 */
+.nv-btn--lg     { height: 48px; padding: 0 32px; font-size: 16px; }             /* in-section web base 48 */
 .nv-btn--header { height: 54px; padding: 0 32px; font-size: 15.5px; }           /* header CTA */
-.nv-btn--hero   { height: 57px; padding: 0 32px; font-size: 16px; }             /* onDark 57 */
-.nv-btn--hero.nv-btn--ondark-alt { height: 55px; }                              /* onDarkAlt 55 */
+.nv-btn--hero   { height: 56px; padding: 0 32px; font-size: 16px; }             /* hero / band 56 */
 .nv-btn--sm .nv-ic { width: 14px; height: 14px; }
 
 /* --- Spinner (chrome, not iconography) --- */
@@ -181,7 +182,7 @@
 .nw-header__user { font: 500 14px/1.4 var(--nv-font-body); color: var(--nv-text-muted); white-space: nowrap; }
 .nw-header__link { font: 600 15.5px/1.4 var(--nv-font-body); color: var(--nv-text-body); text-decoration: none; white-space: nowrap; }
 .nw-header__link:hover { color: var(--nv-blue-slate); }
-.nw-header__toggle { display: none; width: 36px; height: 36px; border-radius: 6px; background: var(--nv-blue-slate); border: 0; margin-left: auto; place-items: center; cursor: pointer; }
+.nw-header__toggle { display: none; width: 44px; height: 44px; border-radius: 6px; background: transparent; border: 0; margin-left: auto; margin-right: -10px; place-items: center; cursor: pointer; }   /* 44×44 burger — responsive.md */
 .nw-accent { position: absolute; left: 0; right: 0; top: 85px; height: 3px; background: var(--nv-grad-accent); }
 
 /* --- Mega-menu (Figma 642:2 — Resources open state) --- */
@@ -196,12 +197,15 @@
 .nw-mega__spot h3 { position: relative; font: 500 30px/1.2 var(--nv-font-display); color: var(--nv-white); margin: 0 0 16px; }
 .nw-mega__spot p  { position: relative; font: 600 15.5px/1.65 var(--nv-font-body); color: var(--nv-text-on-dark-2); max-width: 212px; margin: 0; }
 .nw-mega__divider { background: var(--nv-border-band); height: 300px; }
-.nw-mega__cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 40px; padding-top: 26px; align-content: start; }
-.nw-mega__item { display: grid; grid-template-columns: 28px 1fr; gap: 0 20px; align-items: start; min-height: 96px; text-decoration: none; }
-.nw-mega__item .nv-ic { margin-top: 2px; }
+.nw-mega__cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 40px; padding-top: 12px; align-content: start; }   /* 26 − the links' 14px hover padding */
+.nw-mega__item { display: grid; grid-template-columns: 28px 1fr; gap: 0 20px; align-items: start; min-height: 96px; box-sizing: border-box; padding: 14px 16px; margin: 0 -16px; border-radius: 16px; text-decoration: none; transition: background-color var(--nv-dur) var(--nv-ease); }
+.nw-mega__item .nv-ic { margin-top: 2px; transition: filter var(--nv-dur) var(--nv-ease); }
 .nw-mega__text strong { display: flex; align-items: center; gap: 8px; font: 500 16px/1.26 var(--nv-font-display); color: var(--nv-text-heading); margin-bottom: 8px; transition: color var(--nv-dur) var(--nv-ease); }
-.nw-mega__text > span { display: block; font: 400 13.5px/1.6 var(--nv-font-body); color: var(--nv-text-muted); }
-.nw-mega__item:hover .nw-mega__text strong { color: var(--nv-blue-500); }   /* hover not in Figma — flagged */
+.nw-mega__text > span { display: block; font: 400 13.5px/1.6 var(--nv-font-body); color: var(--nv-text-muted); transition: color var(--nv-dur) var(--nv-ease); }
+/* hover = the whole link turns Steel Blue (direction 01), white text, icons inverted — live-site §3 */
+.nw-mega__item:hover { background: var(--nv-steel-blue); }
+.nw-mega__item:hover .nw-mega__text strong, .nw-mega__item:hover .nw-mega__text > span { color: var(--nv-white); }
+.nw-mega__item:hover .nv-ic { filter: brightness(0) invert(1); }
 
 /* --- Mobile drawer (≤900 only — responsive.md "Marketing header") --- */
 .nw-drawer { display: none; position: absolute; left: 0; right: 0; top: 85px; background: var(--nv-white); border-bottom: 1px solid var(--nv-border-band); z-index: 39; padding: 8px 24px 24px; }
@@ -221,7 +225,7 @@
 .nw-hero--inner .nw-hero__inner { padding-top: 56px; padding-bottom: 64px; }
 .nw-hero__crumb { margin-bottom: 28px; }
 .nw-hero__tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
-.nw-hero__h1 { font: 600 52px/62px var(--nv-font-display); letter-spacing: -.52px; color: var(--nv-white); margin: 0; max-width: 700px; }
+.nw-hero__h1 { font: 600 clamp(30px, 3.9vw, 56px)/1.1 var(--nv-font-display); letter-spacing: -.01em; color: var(--nv-white); margin: 0; max-width: 860px; }   /* web-design §3 hero H1 56/1.1 → 30 */
 .nw-hero--inner .nw-hero__h1 { font-size: 42px; line-height: 1.22; font-weight: 500; letter-spacing: -.42px; max-width: 760px; }
 .nw-hero__copy { font: 600 18px/1.68 var(--nv-font-body); color: var(--nv-white); max-width: 560px; margin: 24px 0 0; }
 .nw-hero--inner .nw-hero__copy { font-weight: 400; color: var(--nv-text-on-dark-4); max-width: 620px; margin-top: 16px; }
@@ -260,14 +264,14 @@
 .nw-section--tight { padding: 72px 0 104px; }
 .nw-section__head { margin-bottom: 48px; }
 .nw-section__head--row { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
-.nw-h2 { font: 500 42px/1.22 var(--nv-font-display); color: var(--nv-text-heading); margin: 0; max-width: 760px; }
+.nw-h2 { font: 500 clamp(28px, 2.9vw, 42px)/1.22 var(--nv-font-display); color: var(--nv-text-heading); margin: 0; max-width: 760px; }
 .nw-h2--centre { text-align: center; margin-left: auto; margin-right: auto; }
 .nw-h3 { font: 500 22px/1.28 var(--nv-font-display); color: var(--nv-text-heading); margin: 0 0 24px; display: flex; align-items: center; gap: 12px; }
 .nw-rule { position: relative; height: 1px; background: var(--nv-border-band); margin: 40px 0 48px; }   /* Figma 1188:4/5 */
 .nw-rule::before { content: ""; position: absolute; left: 0; top: -2px; width: 185px; height: 3px; background: var(--nv-tropical-teal); }
 .nw-intro { font: 400 17px/1.7 var(--nv-font-body); color: var(--nv-text-muted); max-width: 708px; margin: 24px 0 0; }
 .nw-intro--centre { text-align: center; margin-left: auto; margin-right: auto; }
-.nw-eyebrow { display: block; font: 600 11.5px/16px var(--nv-font-body); letter-spacing: 1.4px; text-transform: uppercase; color: var(--nv-text-muted); }
+.nw-eyebrow { display: block; font: 600 13px/18px var(--nv-font-body); color: var(--nv-text-muted); }   /* sentence case — no letterspaced caps over headings (Brand Book p.35) */
 .nw-count { font: 400 14px/20px var(--nv-font-body); color: var(--nv-text-muted); margin: 0 0 20px; }
 .nw-link { display: inline-flex; align-items: center; gap: 10px; font: 600 15px/1.4 var(--nv-font-body); color: var(--nv-text-heading); text-decoration: none; white-space: nowrap; }
 .nw-link:hover { color: var(--nv-blue-500); }
@@ -289,7 +293,7 @@
 .nw-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
 .nw-tiles--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .nw-tile { display: flex; flex-direction: column; background: var(--nv-white); border: 1px solid var(--nv-border-hair); border-radius: 16px; overflow: hidden; text-decoration: none; transition: border-color var(--nv-dur) var(--nv-ease); }
-.nw-tile:hover { border-color: rgba(40,104,127,.35); }   /* hover not in Figma — flagged */
+.nw-tile:hover { border-color: var(--nv-tropical-teal); }   /* hairline turns #80B9BF — live-site §8 case-study card */
 .nw-tile__slot { position: relative; flex-shrink: 0; height: 190px; overflow: hidden; background: var(--nv-surface-slot); display: grid; place-items: center; }   /* image slot: article hero photo, else category icon */
 .nw-tile__body { display: flex; flex-direction: column; gap: 14px; flex: 1; padding: 22px 23px 23px; }
 .nw-tile__tags { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -299,9 +303,9 @@
 
 /* --- Featured article (Figma 793:2329) --- */
 .nw-feature { display: grid; grid-template-columns: minmax(0, 640px) minmax(0, 1fr); gap: 48px; align-items: center; }
-.nw-feature__slot { position: relative; height: 440px; border-radius: 24px; overflow: hidden; background: var(--nv-grad-blend); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; color: var(--nv-white); }
-.nw-feature__slot .nv-ic { position: relative; filter: brightness(0) invert(1); opacity: .92; }
-.nw-feature__slot span:not(.nv-sheet) { position: relative;font: 500 20px/1.3 var(--nv-font-display); }
+.nw-feature__slot { position: relative; height: 440px; border-radius: 24px; overflow: hidden; background: var(--nv-surface-slot); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; color: var(--nv-text-heading); }   /* light slot — Blend is kept for the page's one spotlight */
+.nw-feature__slot .nv-ic { position: relative; }
+.nw-feature__slot span { position: relative; font: 500 20px/1.3 var(--nv-font-display); }
 .nw-section--feature { padding: 70px 0; }   /* 580 band: 70 + 440 image + 70 */
 /* copy rhythm from 793:2333–2343: eyebrow → 12 → tags → 22 → title → 18 → desc → 28 → meta → 24 → button */
 .nw-feature__copy { display: flex; flex-direction: column; align-items: flex-start; }
@@ -312,15 +316,29 @@
 
 /* --- Topic cards = Figma service cards (Home 05, 568×280 r24, Steel Blue hover) --- */
 .nw-services { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
-.nw-service { position: relative; display: block; min-height: 220px; box-sizing: border-box; border-radius: 24px; background: var(--nv-white); border: 1px solid var(--nv-border-band); padding: 39px; text-decoration: none; overflow: hidden; transition: background-color var(--nv-dur) var(--nv-ease), border-color var(--nv-dur) var(--nv-ease); }
+.nw-service { position: relative; display: block; min-height: 220px; box-sizing: border-box; border-radius: 24px; background: var(--nv-white); box-shadow: inset 0 0 0 1px var(--nv-border-band); padding: 40px; text-decoration: none; overflow: hidden; transition: background-color var(--nv-dur) var(--nv-ease); }   /* hairline as an inset ring (as nuvho.com), so the hover art runs to the edge */
 .nw-service__icon { display: block; margin-bottom: 20px; transition: filter var(--nv-dur) var(--nv-ease); }
 .nw-service h3 { display: flex; align-items: center; gap: 12px; font: 500 28px/1.2 var(--nv-font-display); color: var(--nv-text-heading); margin: 0 0 16px; transition: color var(--nv-dur) var(--nv-ease); }
 .nw-service p { font: 400 16px/1.7 var(--nv-font-body); color: var(--nv-text-muted); margin: 0; max-width: 480px; transition: color var(--nv-dur) var(--nv-ease); }
 .nw-service__meta { display: block; margin-top: 20px; font: 600 14px/1.4 var(--nv-font-body); color: var(--nv-blue-slate); transition: color var(--nv-dur) var(--nv-ease); }
-.nw-service:hover { background: var(--nv-steel-blue); border-color: var(--nv-steel-blue); }
-.nw-service:hover h3, .nw-service:hover p, .nw-service:hover .nw-service__meta { color: var(--nv-white); }
-.nw-service:hover p { font-weight: 600; }
-.nw-service:hover .nv-ic { filter: brightness(0) invert(1); }
+.nw-service__icon, .nw-service h3, .nw-service p, .nw-service__meta { position: relative; }   /* copy above the hover art */
+/* Hover art, as nuvho.com .nv-card: grain + glow + two sheets, hidden at rest */
+.nw-service__grain, .nw-service__glow, .nw-service__s1, .nw-service__s2 { position: absolute; pointer-events: none; opacity: 0; transition: opacity 240ms var(--nv-ease); }
+.nw-service__grain { inset: 0; background: url('/grain-card.svg') 0 0 / 240px 240px; mix-blend-mode: overlay; }
+.nw-service__glow { left: 300px; top: -230px; width: 560px; height: 420px; border-radius: 50%; background: radial-gradient(280px 210px at 50% 50%, rgba(233,234,236,.55) 0%, rgba(164,202,206,.2) 50%, rgba(145,193,198,0) 100%); }
+.nw-service__s1 { right: -92px; top: -130px; width: 240px; height: 240px; border-radius: 70px; background: linear-gradient(40.011deg, rgba(164,202,206,.24) 14.48%, rgba(255,255,255,.03) 85.45%), rgba(255,255,255,.42); }
+.nw-service__s2 { left: -90px; top: 210px; width: 240px; height: 240px; border-radius: 70px; background: linear-gradient(40.011deg, rgba(164,202,206,.24) 14.48%, rgba(255,255,255,.03) 85.45%); }
+/* Link badge (nuvho.com .nv-linkicon): pale at rest, white arrow on a translucent disc on hover */
+.nw-service__link { position: absolute; top: 20px; right: 20px; z-index: 1; width: 36px; height: 36px; border-radius: 50%; background: #EEF4F5; display: flex; align-items: center; justify-content: center; pointer-events: none; transition: background-color var(--nv-dur) var(--nv-ease), transform var(--nv-dur) var(--nv-ease); }
+.nw-service__link::before { content: ""; width: 16px; height: 16px; background: var(--nv-blue-slate); -webkit-mask: url('/icons/arrow-up-right.svg') center / contain no-repeat; mask: url('/icons/arrow-up-right.svg') center / contain no-repeat; transition: background-color var(--nv-dur) var(--nv-ease); }
+.nw-service:hover, .nw-service:focus-visible { background: var(--nv-steel-blue); box-shadow: none; }
+.nw-service:hover :is(.nw-service__grain, .nw-service__glow, .nw-service__s1, .nw-service__s2),
+.nw-service:focus-visible :is(.nw-service__grain, .nw-service__glow, .nw-service__s1, .nw-service__s2) { opacity: 1; }
+.nw-service:hover .nw-service__link, .nw-service:focus-visible .nw-service__link { background: rgba(255,255,255,.2); transform: translate(2px, -2px); }
+.nw-service:hover .nw-service__link::before, .nw-service:focus-visible .nw-service__link::before { background: var(--nv-white); }
+.nw-service:hover :is(h3, p, .nw-service__meta), .nw-service:focus-visible :is(h3, p, .nw-service__meta) { color: var(--nv-white); }
+.nw-service:hover p, .nw-service:focus-visible p { -webkit-text-stroke: .45px currentColor; }   /* faux-bold without reflow, as nuvho.com */
+.nw-service:hover .nv-ic, .nw-service:focus-visible .nv-ic { filter: brightness(0) invert(1); }
 
 /* --- Reading column (article page — not in Figma; proposal, decision 2) --- */
 .nw-article { max-width: 760px; }
@@ -360,10 +378,17 @@
 .nw-empty h2 { font: 500 22px/1.28 var(--nv-font-display); color: var(--nv-text-heading); margin: 0; }
 .nw-empty p { font: 400 15px/1.6 var(--nv-font-body); color: var(--nv-text-muted); margin: 10px 0 24px; }
 
-/* --- Conversion band (Figma "06 · Subscribe (Blue Slate · full bleed)" 794:95, 420) --- */
+/* --- Conversion band (Figma "06 · Subscribe" 794:95, 420). Default = Blue Slate GROUND
+   (large section, square). --spot = THE spotlight: Blend + 120px house curve (one per page). --- */
 .nw-band { position: relative; overflow: hidden; color: var(--nv-white); background: var(--nv-grad-ground); padding: 110px 0 112px; }
-.nw-band .nv-sheet--1 { bottom: auto; top: 220px; }   /* Sheet / 01 at y 220 */
-.nw-band .nv-sheet--2 { bottom: auto; top: 300px; }   /* Sheet / 03 at y 300 */
+.nw-band--spot { background: var(--nv-grad-blend); border-top-right-radius: 120px; }
+.nw-curve-fill { background: var(--nv-platinum); }   /* the Platinum notch behind the house curve (Brand Book p.50) */
+.nw-band__glow  { position: absolute; right: -420px; top: -460px; width: 1200px; height: 980px; border-radius: 50%; pointer-events: none;
+                  background: radial-gradient(closest-side, rgba(255,255,255,.30), rgba(170,210,214,.14) 55%, rgba(128,185,191,0)); }
+.nw-band__sheet { position: absolute; right: -150px; top: -230px; width: 560px; height: 560px; border-radius: 134px; pointer-events: none;   /* r = 0.24 × 560 */
+                  background: var(--nv-grad-lift); border: 1.5px solid rgba(255,255,255,.18); opacity: .5; }
+.nw-band__scrim { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, rgba(40,104,127,.55), rgba(40,104,127,0) 72%); }
+.nw-grain       { position: absolute; inset: 0; pointer-events: none; background: url('/grain.svg') 0 0 / 240px 240px; mix-blend-mode: overlay; opacity: .35; }   /* grain last */
 .nw-band__inner { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; }
 .nw-band h2 { font: 500 38px/48px var(--nv-font-display); color: var(--nv-white); margin: 0; }
 .nw-band p { font: 400 20px/1.7 var(--nv-font-body); color: var(--nv-text-on-dark-4); margin: 22px 0 0; max-width: 900px; }
@@ -384,8 +409,8 @@
 .nw-footer__social img { display: block; filter: brightness(0) invert(1); }
 .nw-footer__cols { display: flex; gap: 60px; text-align: right; padding-top: 86px; }
 .nw-footer__cols h4 { font: 500 17px/1.3 var(--nv-font-display); color: var(--nv-white); margin: 0 0 22px; }
-.nw-footer__cols a { display: block; font: 400 14px/1.6 var(--nv-font-body); color: var(--nv-text-on-dark-3); text-decoration: none; margin-bottom: 9.6px; transition: color var(--nv-dur) var(--nv-ease); }
-.nw-footer__cols a:hover { color: var(--nv-white); }
+.nw-footer__cols a { display: block; font: 400 13px/1.5 var(--nv-font-body); color: var(--nv-text-on-dark-2); text-decoration: none; margin-bottom: 10px; transition: color var(--nv-dur) var(--nv-ease); }   /* Raleway 13 #E9EAEC — web-design §3 */
+.nw-footer__cols a:hover { color: var(--nv-tropical-teal); }
 .nw-footer__rule { height: 1px; background: rgba(255,255,255,.16); margin: 60px -40px 36px; }   /* extends 40px past both gutters */
 .nw-footer__legal { display: flex; justify-content: space-between; align-items: center; gap: 16px 28px; flex-wrap: wrap; font: 400 13px/1.5 var(--nv-font-body); color: var(--nv-text-on-dark-3); }
 .nw-footer__legal div { display: flex; gap: 28px; }
@@ -468,6 +493,15 @@
 .na-input:focus, .na-select:focus, .na-textarea:focus { border-color: var(--nv-blue-slate); box-shadow: inset 0 0 0 .5px var(--nv-blue-slate); }  /* = 1.5px, no layout shift */
 .na-input:disabled, .na-select:disabled, .na-textarea:disabled { background: var(--nv-surface-disabled); color: var(--nv-text-disabled); cursor: not-allowed; }
 .na-textarea { height: 96px; padding: 12px 16px; resize: vertical; line-height: 1.5; }
+.na-password-box {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: var(--nv-surface-tint); border: 1px solid var(--nv-border); border-radius: 6px;
+  padding: 12px 16px;
+}
+.na-password-box code {
+  font: 600 15px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: var(--nv-text-body); letter-spacing: .02em; user-select: all;
+}
 .na-textarea--code { font: 400 13px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; min-height: 160px; height: auto; }
 .na-select { appearance: none; padding-right: 40px; cursor: pointer; background-image: url('/icons/angle-down.svg'); background-repeat: no-repeat; background-position: right 14px center; background-size: 14px 14px; }
 .na-help { font: 300 11px/1.5 var(--nv-font-body); color: var(--nv-text-muted); }
@@ -524,13 +558,16 @@
    ========================================================================== */
 @media (max-width: 900px) {
   .nw-nav, .nw-header__cta, .nw-mega, .nw-accent { display: none; }
+  .nw-header, .nw-header__inner { height: 64px; }                                      /* bar 64 / logo 31 — responsive.md */
+  .nw-header__logo img { height: 31px; }
   .nw-header__toggle { display: grid; }
-  .nw-drawer { display: block; }
+  .nw-drawer { display: block; top: 64px; border-top: 3px solid var(--nv-tropical-teal); }
+  .nw-drawer__row { height: 57px; font: 500 19px/1.3 var(--nv-font-display); color: var(--nv-text-heading); }
+  .nw-drawer__sub { background: var(--nv-surface-tint); margin: 0 -24px; padding: 8px 24px 8px 40px; }
 
   .nw-hero { min-height: 0; }
   .nw-hero__inner { padding-top: 64px; padding-bottom: 64px; }
   .nw-hero--inner .nw-hero__inner { padding-top: 40px; padding-bottom: 48px; }
-  .nw-hero__h1 { font-size: 40px; line-height: 1.1; letter-spacing: -.4px; }          /* proposal in responsive.md */
   .nw-hero--inner .nw-hero__h1 { font-size: 32px; }
   .nw-hero__copy { font-size: 16px; }
   .nw-search { flex-wrap: wrap; }
@@ -538,27 +575,32 @@
 
   .nw-section { padding: 64px 0; }
   .nw-section--tight { padding: 48px 0 64px; }
-  .nw-h2 { font-size: 32px; }
   .nw-rule { margin: 28px 0 32px; }
   .nw-chips { display: flex; overflow-x: auto; flex-wrap: nowrap; border-radius: 28px; }
   .nw-tiles, .nw-tiles--2, .nw-services { grid-template-columns: minmax(0, 1fr); }
-  .nw-service { padding: 28px; min-height: 0; }
+  .nw-service { padding: 29px; min-height: 0; }
   .nw-service h3 { font-size: 24px; }
+  .nw-service__link { top: 16px; right: 16px; width: 32px; height: 32px; }
+  .nw-service__link::before { width: 14px; height: 14px; }
   .nw-feature { grid-template-columns: minmax(0, 1fr); gap: 28px; }
   .nw-feature__slot { height: 240px; }
   .nw-section--feature { padding: 48px 0; }
   .nw-band { padding: 64px 0; }
+  .nw-band--spot { border-top-right-radius: 64px; }                                   /* house curve 120 → 64 */
   .nw-band h2 { font-size: 30px; line-height: 1.2; }
   .nw-band p { font-size: 17px; }
   .nw-band__actions { flex-direction: column; align-self: stretch; }
-  .nw-band__btn { width: 100%; }
+  .nw-band__btn { width: 100%; height: 52px; }
 
-  .nw-footer { padding: 48px 0 32px; }
-  .nw-footer__top { grid-template-columns: minmax(0, 1fr); gap: 32px; }
-  .nw-footer__logo img { height: 60px; }
-  .nw-footer__cols { flex-direction: column; gap: 28px; text-align: left; padding-top: 0; }
+  /* footer: everything centred and stacked, logo 180 — responsive.md */
+  .nw-footer { padding: 48px 0 32px; text-align: center; }
+  .nw-footer__top { grid-template-columns: minmax(0, 1fr); gap: 32px; justify-items: center; }
+  .nw-footer__logo img { width: 180px; height: auto; }
+  .nw-footer__contact { align-items: center; }
+  .nw-footer__social { justify-content: center; }
+  .nw-footer__cols { flex-direction: column; gap: 28px; text-align: center; padding-top: 0; }
   .nw-footer__rule { margin: 40px 0 24px; }
-  .nw-footer__legal { flex-direction: column; align-items: flex-start; }
+  .nw-footer__legal { flex-direction: column-reverse; align-items: center; }
 
   .na-page { padding: 32px 0 64px; }
   .na-grid-2, .na-grid-3 { grid-template-columns: minmax(0, 1fr); }
@@ -574,7 +616,7 @@
 
 
 /* ============================================================================
-   AUTH PAGES (/login, /signup) — nuvho-web-design v1.0.0 §11 Login
+   AUTH PAGES (/login, /signup, /auth/callback) — nuvho-web-design v1.0.0 §11 Login
    ----------------------------------------------------------------------------
    Unchanged from the prior handover: every .nv-auth* class below is used ONLY
    by the Login and Signup pages, which were already aligned to §11.
@@ -668,7 +710,7 @@
 }
 
 .nv-auth__mobile-logo     { display: none; margin-bottom: 28px; }
-.nv-auth__mobile-logo img { width: 44px; height: auto; }   /* Logo / Primary 44 */
+.nv-auth__mobile-logo img { height: 36px; width: auto; display: block; }   /* Logo / Primary at the 36px web lock (Brand Book p.40) */
 
 /* Card — 7: r14, 1px hairline, padding 40 36, NO SHADOW */
 .nv-auth__card {
@@ -797,6 +839,35 @@
   .nv-auth__panel-footer { display: block; }
 }
 
+/* --- Busy state, Microsoft sign-in, callback page (2026-10-07) ------------- */
+.nv-auth__btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.nv-auth__btn[aria-busy="true"]:disabled { background: var(--nv-blue-slate); color: var(--nv-white); cursor: progress; }
+.nv-auth__error a { color: inherit; font-weight: 600; text-decoration: underline; }
+
+/* "Nuvho staff" divider — hairline with a sentence-case label (no letterspaced caps) */
+.nv-auth__divider { position: relative; display: flex; justify-content: center; margin: 28px 0 16px; }
+.nv-auth__divider::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; border-top: 1px solid var(--nv-border-band); }
+.nv-auth__divider span { position: relative; padding: 0 12px; background: var(--nv-surface-card); font: 500 13px/1.4 var(--nv-font-body); color: var(--nv-text-muted); }
+
+/* Sign in with Microsoft — Chapter 04 secondary button: h40 pill, 1px Blue Slate @50%,
+   recolour-only hover. The four-square Microsoft mark is the one permitted non-library glyph here. */
+.nv-auth__ms {
+  width: 100%; height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 0 24px; box-sizing: border-box; border: 1px solid rgba(40,104,127,.5); border-radius: 999px;
+  background: transparent; font: 600 15px/1.4 var(--nv-font-body); color: var(--nv-blue-slate);
+  cursor: pointer; transition: background-color .15s ease;
+}
+.nv-auth__ms:hover:not(:disabled) { background: rgba(40,104,127,.08); }
+.nv-auth__ms:disabled { color: var(--nv-text-disabled); border-color: var(--nv-border); cursor: not-allowed; }
+.nv-auth__ms[aria-busy="true"]:disabled { color: var(--nv-blue-slate); border-color: rgba(40,104,127,.5); cursor: progress; }
+.nv-auth__ms svg { flex: none; width: 18px; height: 18px; }
+
+/* Microsoft popup redirect page and the /login route loader */
+.nv-auth__callback {
+  min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  padding: 24px; box-sizing: border-box; background: var(--nv-surface-page); text-align: center;
+  font: 400 14px/1.6 var(--nv-font-body); color: var(--nv-text-muted);
+}
 
 /* ============================================================================
    ADDENDUM 2026-09-22 — photo hero + reader card (article page revision)
@@ -871,3 +942,66 @@
 .na-upload .na-hero-preview .na-input { flex: 1 1 240px; width: auto; }
 .na-upload .na-help { display: block; margin-top: 6px; }
 .na-upload .na-error { display: block; margin-top: 8px; }
+
+/* ============================================================================
+   ADDENDUM 2026-10-01 — Microsoft sign-in, fuzzy search suggestions, loaders
+   ========================================================================== */
+
+/* Busy buttons keep their variant colours (the generic :disabled grey would hide the spinner) */
+.nv-btn[aria-busy="true"] { cursor: progress; }
+.nv-btn--ondark[aria-busy="true"]:disabled    { background: var(--nv-white); color: var(--nv-blue-slate); }
+.nv-btn--secondary[aria-busy="true"]:disabled { background: transparent; color: var(--nv-blue-slate); }
+.nv-btn--ghost[aria-busy="true"]:disabled     { background: transparent; color: var(--nv-blue-slate); }
+.nw-hero__popular button:disabled { opacity: .6; cursor: progress; }
+
+/* Search-as-you-type: spinner in the field + suggestion list under it */
+.nw-search__input { padding-right: 48px; }
+.nw-search__spinner { position: absolute; right: 20px; top: 28px; transform: translateY(-50%); display: flex; }
+.nw-suggest {
+  position: absolute; left: 0; right: 0; top: calc(100% + 8px); z-index: 30;
+  margin: 0; padding: 6px; list-style: none; box-sizing: border-box;
+  background: var(--nv-white); border: 1px solid var(--nv-border-header); border-radius: 16px;
+  text-align: left;   /* no drop shadow (brand law) — the hairline and the white-on-photo contrast separate it */
+}
+.nw-suggest__item { display: flex; flex-direction: column; gap: 2px; padding: 10px 14px; border-radius: 10px; cursor: pointer; }
+.nw-suggest__item.is-active { background: var(--nv-surface-tint); }
+.nw-suggest__title { font: 500 15px/1.4 var(--nv-font-display); color: var(--nv-text-heading); }
+.nw-suggest__meta  { display: inline-flex; align-items: center; gap: 4px; font: 400 12px/1.4 var(--nv-font-body); color: var(--nv-text-meta); }
+.nw-suggest__empty { padding: 10px 14px; font: 400 13px/1.4 var(--nv-font-body); color: var(--nv-text-muted); }
+.nw-suggest__all {
+  display: flex; align-items: center; gap: 8px; margin-top: 4px; padding: 10px 14px;
+  border-top: 1px solid var(--nv-border-band); font: 600 13px/1.4 var(--nv-font-body); color: var(--nv-blue-slate); cursor: pointer;
+}
+.nw-suggest__all:hover { background: var(--nv-surface-tint); border-radius: 0 0 10px 10px; }
+.nw-suggest__all .nv-ic { filter: none; position: static; transform: none; opacity: 1; }
+.nw-suggest .nv-ic { position: static; transform: none; filter: none; opacity: 1; }
+
+/* Skeletons — shimmer placeholders shaped like the content they stand in for */
+.nv-skel {
+  display: block; border-radius: 6px;
+  background: linear-gradient(90deg, #E3EDF3 0%, #EEF4F5 50%, #E3EDF3 100%) 0 0 / 200% 100%;
+  animation: nv-skel 1.4s ease-in-out infinite;
+}
+.nv-skel--ondark { background-image: linear-gradient(90deg, rgba(255,255,255,.14) 0%, rgba(255,255,255,.26) 50%, rgba(255,255,255,.14) 100%); }
+.nv-skel--tag   { width: 88px; height: 22px; border-radius: 999px; }
+.nv-skel--title { width: 80%; height: 20px; }
+.nv-skel--line  { width: 100%; height: 12px; }
+.nv-skel--short { width: 60%; }
+.nv-skel--para  { height: 14px; margin-bottom: 14px; }
+.nv-skel--crumb { width: 180px; height: 14px; margin-bottom: 28px; }
+.nv-skel--h1    { width: min(520px, 90%); height: 44px; border-radius: 10px; }
+.nv-skel--copy  { width: min(420px, 75%); height: 18px; margin-top: 20px; }
+.nw-skel-tile .nw-tile__slot { border-radius: 0; }
+@keyframes nv-skel { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .nv-skel { animation: none; }
+  .nv-spin { animation-duration: 1.6s; }
+}
+
+/* Hero no longer clips (the suggestions list must overhang the next section); its
+   decorative layers clip inside .nw-hero__bg instead. Above the following sections,
+   below the header (z 40) so the mega-menu still covers it. */
+.nw-hero { overflow: visible; z-index: 2; }
+.nw-hero:has(.nw-suggest) { z-index: 35; }
+.nw-hero__bg { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }

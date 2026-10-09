@@ -10,7 +10,8 @@ interface Props {
 }
 
 // Featured article (Figma 793:2329): image 640×440 r24 + copy column. Uses the article's
-// hero image when present; otherwise a Blend-gradient panel carrying the category icon.
+// hero image when present; otherwise the light image slot (as on the tiles) carrying the
+// category icon — Blend is reserved for the page's one spotlight (the contact band).
 export default function FeaturedArticle({ article, category }: Props) {
   const href = `/articles/${article.categorySlug}/${article.slug}`
   const catTitle = category?.title ?? article.categorySlug.replace(/-/g, ' ')
@@ -24,9 +25,7 @@ export default function FeaturedArticle({ article, category }: Props) {
           <img className="nw-feature__img" src={hero.src} alt={hero.alt} />
         ) : (
           <>
-            <span className="nv-sheet nv-sheet--focal" aria-hidden="true" />
-            <span className="nv-sheet nv-sheet--1" aria-hidden="true" />
-            <Icon name={category?.icon ?? 'file-lines'} size={120} />
+            <Icon name={category?.icon ?? 'file-lines'} size={96} />
             <span>{catTitle}</span>
           </>
         )}

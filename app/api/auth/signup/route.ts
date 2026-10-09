@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import pool from '@/lib/db'
-import { createSession } from '@/lib/auth'
+import { createSession, isStaffEmail } from '@/lib/auth'
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,6 +13,13 @@ export async function POST(req: NextRequest) {
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json({ error: 'Invalid email address.' }, { status: 400 })
+    }
+    // Staff addresses grant admin access, so they must prove ownership via Microsoft.
+    if (isStaffEmail(email)) {
+      return NextResponse.json(
+        { error: 'Nuvho staff sign in with their Microsoft account.', useMicrosoft: true },
+        { status: 403 }
+      )
     }
     if (password.length < 8) {
       return NextResponse.json({ error: 'Password must be at least 8 characters.' }, { status: 400 })

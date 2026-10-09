@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import ArticleTile, { TileCategory } from '@/components/ArticleTile'
 import EmptyState from '@/components/EmptyState'
+import { TileGridSkeleton } from '@/components/Skeletons'
 import { Article } from '@/lib/types'
 
 interface Props {
@@ -13,7 +14,8 @@ interface Props {
 
 export default function SearchResults({ query, categories }: Props) {
   const [results, setResults] = useState<Article[]>([])
-  const [loading, setLoading] = useState(false)
+  // Starts loading when there is a query, so "No results" never flashes before the fetch
+  const [loading, setLoading] = useState(!!query)
 
   useEffect(() => {
     if (!query) {
@@ -41,7 +43,7 @@ export default function SearchResults({ query, categories }: Props) {
   }
 
   if (loading) {
-    return <div className="na-loading" role="status" aria-live="polite"><span className="nv-spin" /></div>
+    return <TileGridSkeleton label="Searching" />
   }
 
   if (results.length === 0) {

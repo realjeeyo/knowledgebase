@@ -4,24 +4,37 @@ import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import MicrosoftSignInButton, { MicrosoftClientConfig } from '@/components/MicrosoftSignInButton'
 
-export default function SignupPage() {
+interface Props {
+  /** null when the AZURE_* env vars are unset — the Microsoft option is hidden. */
+  microsoft: MicrosoftClientConfig | null
+}
+
+export default function LoginForm({ microsoft }: Props) {
   const router = useRouter()
-  const [form, setForm] = useState({ name: '', email: '', password: '' })
+  const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [useMicrosoft, setUseMicrosoft] = useState(false)
-  const [redirecting, setRedirecting] = useState(false)
-  const busy = loading || redirecting
+  const [microsoftBusy, setMicrosoftBusy] = useState(false)
+  // Which button signed in — its spinner stays up while the home page loads with the session
+  const [redirectingVia, setRedirectingVia] = useState<'password' | 'microsoft' | null>(null)
+  const busy = loading || microsoftBusy || redirectingVia !== null
+  const passwordBusy = loading || redirectingVia === 'password'
+
+  function onSignedIn(via: 'password' | 'microsoft') {
+    setRedirectingVia(via)
+    router.push('/')
+    router.refresh()
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
-    setUseMicrosoft(false)
     setLoading(true)
 
     try {
-      const res = await fetch('/api/auth/signup', {
+      const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
@@ -29,12 +42,9 @@ export default function SignupPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error ?? 'Sign up failed.')
-        setUseMicrosoft(!!data.useMicrosoft)
+        setError(data.error ?? 'Login failed.')
       } else {
-        setRedirecting(true)
-        router.push('/')
-        router.refresh()
+        onSignedIn('password')
       }
     } catch {
       setError('Something went wrong. Please try again.')
@@ -62,10 +72,10 @@ export default function SignupPage() {
               priority
             />
           </Link>
-          <h2 className="nv-auth__hero">Start with the answer.</h2>
+          <h2 className="nv-auth__hero">Answers, close at hand.</h2>
           <p className="nv-auth__sub">
-            Create an account to save what matters, follow the guides that apply to
-            your property and keep your team on the same page.
+            Guides, tutorials and documentation for Smart Hoteliers — organised so
+            your team finds the right answer first time.
           </p>
         </div>
 
@@ -79,33 +89,16 @@ export default function SignupPage() {
         </Link>
 
         <div className="nv-auth__card">
-          <h1 className="nv-auth__title">Create an account</h1>
-          <p className="nv-auth__lede">Join the Nuvho Knowledge Base.</p>
+          <h1 className="nv-auth__title">Sign in</h1>
+          <p className="nv-auth__lede">Welcome back to the Nuvho Knowledge Base.</p>
 
           {error && (
             <div className="nv-auth__error" role="alert">
               {error}
-              {useMicrosoft && <> <Link href="/login">Sign in with Microsoft</Link></>}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="nv-auth__form">
-            <div className="nv-auth__group">
-              <label className="nv-auth__label" htmlFor="name">
-                Full name <span className="nv-auth__req">*</span>
-              </label>
-              <input
-                id="name"
-                type="text"
-                autoComplete="name"
-                required
-                value={form.name}
-                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                className="nv-auth__field"
-                placeholder="Jane Smith"
-              />
-            </div>
-
             <div className="nv-auth__group">
               <label className="nv-auth__label" htmlFor="email">
                 Email address <span className="nv-auth__req">*</span>
@@ -129,27 +122,39 @@ export default function SignupPage() {
               <input
                 id="password"
                 type="password"
-                autoComplete="new-password"
+                autoComplete="current-password"
                 required
-                minLength={8}
                 value={form.password}
                 onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
                 className="nv-auth__field"
-                placeholder="Create a password"
+                placeholder="Enter your password"
               />
-              <p className="nv-auth__help">Use at least 8 characters.</p>
             </div>
 
             <div className="nv-auth__actions">
-              <button type="submit" disabled={busy} className="nv-auth__btn" aria-busy={busy}>
-                {busy && <span className="nv-spin nv-spin--sm nv-spin--w" aria-hidden="true" />}
-                {busy ? 'Creating account…' : 'Create account'}
+              <button type="submit" disabled={busy} className="nv-auth__btn" aria-busy={passwordBusy}>
+                {passwordBusy && <span className="nv-spin nv-spin--sm nv-spin--w" aria-hidden="true" />}
+                {passwordBusy ? 'Signing in…' : 'Sign in'}
               </button>
             </div>
           </form>
 
+          {microsoft && (
+            <>
+              <div className="nv-auth__divider"><span>Nuvho staff</span></div>
+              <MicrosoftSignInButton
+                config={microsoft}
+                disabled={busy}
+                redirecting={redirectingVia === 'microsoft'}
+                onBusyChange={setMicrosoftBusy}
+                onError={setError}
+                onSuccess={() => onSignedIn('microsoft')}
+              />
+            </>
+          )}
+
           <p className="nv-auth__foot">
-            Already have an account? <Link href="/login">Sign in</Link>
+            Don&apos;t have an account? <Link href="/signup">Create one</Link>
           </p>
         </div>
 
