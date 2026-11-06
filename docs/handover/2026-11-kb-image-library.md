@@ -1,20 +1,21 @@
 # Knowledge Base: image library — rollout steps (Nov 2026)
 
-**Feature:** "Choose from library" on the article **Edit page** hero image field, next to paste-URL and Upload.
+**Feature:** "Choose from library" on the hero image field, next to paste-URL and Upload: on the article **Edit page**
+and in the **admin dashboard's article form** (new and existing articles).
 Editors browse the Marketing photo library, open a photo to see the **real article hero and tile** with the
 article's (unsaved) title and description at desktop or phone size, then confirm. Nothing is saved until
 "Save changes".
 **Branch:** `feature/kb-image-library-picker`
-**Switch-on:** no env setting. The Edit page checks the database on each load and shows "Choose from library"
+**Switch-on:** no env setting. The Edit page and the admin dashboard check the database on each load and show "Choose from library"
 only once `nuvho_kb.image_library` exists and holds at least one active photo. Until the steps below are done
-the Edit page looks exactly as before, so the code can merge first.
+both forms look exactly as before, so the code can merge first.
 
 ## Decisions (5 Nov 2026)
 
 | Question | Decision |
 |---|---|
 | How the KB reads the repository | **Snapshot import** (no live Microsoft Graph connection, no Entra credentials in production) |
-| Where the option appears | **Hero image on the Edit page** only (not the admin dashboard, not inline body images) |
+| Where the option appears | **Hero image** on the article Edit page (5 Nov), extended on 6 Nov to the **admin dashboard's article form** for new and existing articles. Not for inline body images |
 | Preview | **Hero preview inside the picker**: the real hero + article tile, desktop/mobile toggle |
 | Stored size | **2400px-wide JPEG, quality 85** (never enlarged) plus a 480px thumbnail for the grid |
 
@@ -62,7 +63,7 @@ All SQL targets the KB database on `nuvho-vectordb` (209.38.90.132), database `n
    **Storage:** expect roughly 0.3–0.8 MB per photo at 2400px plus ~30 KB per thumbnail, so about
    **70–190 MB** for the current 229 photos, in the same database as the vector DBs. Check free disk on the
    droplet first. `--width 1920` roughly halves it if needed.
-5. **Check:** nothing to switch on. Once the import has finished, open any article's Edit page → Hero image →
+5. **Check:** nothing to switch on. Once the import has finished, open any article's Edit page (or Admin → Articles → Add article / Edit) → Hero image →
    **Choose from library**. (To hide the option again, mark the rows inactive:
    `UPDATE nuvho_kb.image_library SET active = false;`, and re-run the import to bring them back.)
 
@@ -77,3 +78,8 @@ file reactivated. In the browser: picker loads only for `@nuvho.com` sessions (A
 filter and search, desktop and mobile previews with the real breakpoints and the tile, "Use this image" fills the
 field, Save publishes the hero, phone-width layout, Escape closes. Not tested against the production database or
 with the real 229 photos.
+
+**6 Nov 2026:** the env flag was replaced by the photo check (table missing / empty / only inactive photos → hidden;
+one active photo → shown; database unreachable → hidden, page still renders). In the admin dashboard: Add article →
+Choose from library → preview ("Untitled article", today's date) and Edit → Choose from library → preview → Use this image
+→ Save changes publishes the hero. The article Edit page uses the same shared preview page.

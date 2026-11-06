@@ -8,6 +8,7 @@ import RichTextEditor from '@/components/RichTextEditor'
 import ImageUploadField from '@/components/ImageUploadField'
 import Icon from '@/components/Icon'
 import SyncModal from '@/components/admin/SyncModal'
+import { heroPreviewUrl } from '@/lib/heroPreviewUrl'
 
 interface Props {
   categorySlug: string
@@ -20,6 +21,9 @@ interface Props {
   versioning?: boolean
   /** True once the image library has imported photos (server page checks): adds "Choose from library" to the hero field. */
   imageLibrary?: boolean
+  /** For the library's hero preview: the article's resolved visibility and last-updated date. */
+  effectiveVisibility?: 'public' | 'private'
+  updatedAt?: string
 }
 
 // Fields follow the Figma field law (browser-app §5); buttons the Figma Button (§4).
@@ -29,7 +33,7 @@ interface Props {
 // to /api/admin/uploads and referenced by URL. The server sanitises on save (lib/sanitize.ts).
 export default function ArticleEditForm({
   categorySlug, slug, initialTitle, initialDescription, initialContent, initialReadTime, versioning = false,
-  imageLibrary = false,
+  imageLibrary = false, effectiveVisibility = 'public', updatedAt,
 }: Props) {
   const router = useRouter()
   const initial = extractHero(initialContent)
@@ -49,10 +53,10 @@ export default function ArticleEditForm({
   // unsaved title, description and alt text from this form.
   const library = imageLibrary
     ? {
-        previewUrl: (src: string) =>
-          `/articles/${categorySlug}/${slug}/edit/hero-preview?${new URLSearchParams({
-            src, alt: heroAlt, title, desc: description,
-          })}`,
+        previewUrl: (src: string) => heroPreviewUrl({
+          src, alt: heroAlt, title, description, categorySlug, readTime,
+          visibility: effectiveVisibility, updated: updatedAt,
+        }),
       }
     : undefined
 

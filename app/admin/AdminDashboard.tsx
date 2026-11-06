@@ -6,6 +6,7 @@ import { extractHero, injectHero } from '@/components/heroImage'
 import RichTextEditor from '@/components/RichTextEditor'
 import ImageUploadField from '@/components/ImageUploadField'
 import SyncModal, { TIERS, type SyncTarget } from '@/components/admin/SyncModal'
+import { heroPreviewUrl } from '@/lib/heroPreviewUrl'
 
 // Admin dashboard — browser-app law (nuvho-web-design references/browser-app-shell.md):
 // §4 Figma Button · §5 Figma field · §6 table (48px rows, sentence-case header)
@@ -240,7 +241,7 @@ function CategoryForm({ title, desc, icon, visibility, setTitle, setDesc, setIco
 
 function ArticleForm({ categories, subcategories, title, desc, category, subcategory, content, readTime, featured, visibility,
   setTitle, setDesc, setCategory, setSubcategory, setContent, setReadTime, setFeatured, setVisibility,
-  onSave, onCancel, saving, saveLabel, showCategory, hero = '', setHero, showHero = false }: {
+  onSave, onCancel, saving, saveLabel, showCategory, hero = '', setHero, showHero = false, library }: {
   categories: AdminCategory[]
   subcategories: AdminSubcategory[]
   title: string; desc: string; category: string; subcategory: string; content: string; readTime: string; featured: boolean
@@ -253,6 +254,8 @@ function ArticleForm({ categories, subcategories, title, desc, category, subcate
   /** Hero image URL (stored at the top of the article HTML — components/heroImage.ts).
    *  Shown on create and, once startEdit has loaded the stored HTML, on inline edit too. */
   hero?: string; setHero?: (v: string) => void; showHero?: boolean
+  /** Adds "Choose from library" to the hero field (only once the image library has photos). */
+  library?: { previewUrl: (src: string) => string }
 }) {
   const subsForCategory = subcategories.filter(s => s.category_slug === category)
   return (
@@ -298,7 +301,10 @@ function ArticleForm({ categories, subcategories, title, desc, category, subcate
             value={hero}
             onChange={setHero}
             disabled={saving}
-            help="Full-width behind the title and on tiles. Upload a JPG, PNG, WebP or GIF up to 10 MB, or paste a URL. Stored as the first element of the article HTML."
+            library={library}
+            help={library
+              ? 'Full-width behind the title and on tiles. Choose a photo from the Marketing image library (with a preview of the page), upload a JPG, PNG, WebP or GIF up to 10 MB, or paste a URL. Stored as the first element of the article HTML.'
+              : 'Full-width behind the title and on tiles. Upload a JPG, PNG, WebP or GIF up to 10 MB, or paste a URL. Stored as the first element of the article HTML.'}
           />
         </div>
       )}
@@ -1064,9 +1070,12 @@ function UsersTab({ onToast }: { onToast: (msg: string, type: 'success' | 'error
 function ArticlesTab({
   onToast,
   onPendingCount,
+  imageLibrary = false,
 }: {
   onToast: (msg: string, type: 'success' | 'error') => void
   onPendingCount: (n: number) => void
+  /** True once the image library has imported photos (checked by app/admin/page.tsx). */
+  imageLibrary?: boolean
 }) {
   const [articles, setArticles] = useState<AdminArticle[]>([])
   const [categories, setCategories] = useState<AdminCategory[]>([])
@@ -1163,6 +1172,27 @@ function ArticlesTab({
   const filtered = articles
     .filter(a => !filterCategory || a.category_slug === filterCategory)
     .filter(a => !filterStatus || a.status === filterStatus)
+
+  // Image library for the hero field: the preview renders the real hero + tile from this
+  // unsaved form (category, visibility, read time), so it works for new articles too.
+  function heroLibrary(art: AdminArticle | null) {
+    if (!imageLibrary) return undefined
+    return {
+      previewUrl: (src: string) => {
+        const cat = categories.find(c => c.slug === fCategory)
+        const sub = subcategories.find(s => s.slug === fSubcategory)
+        return heroPreviewUrl({
+          src, alt: fHeroAlt, title: fTitle, description: fDesc, categorySlug: fCategory, readTime: fReadTime,
+          visibility: effectiveVisibility({
+            visibility: fVisibility || null,
+            subcategory_visibility: sub?.visibility ?? null,
+            category_visibility: cat?.visibility ?? 'public',
+          }),
+          updated: art?.updated_at,
+        })
+      },
+    }
+  }
 
   async function startEdit(art: AdminArticle) {
     const key = `${art.category_slug}/${art.slug}`
@@ -1378,6 +1408,7 @@ function ArticlesTab({
             onSave={saveAdd} onCancel={cancel} saving={saving} saveLabel="Create article"
             showCategory
             hero={fHero} setHero={setFHero} showHero
+            library={heroLibrary(null)}
           />
         </div>
       )}
@@ -1479,6 +1510,7 @@ function ArticlesTab({
                           onSave={() => saveEdit(art)} onCancel={cancel} saving={saving} saveLabel="Save changes"
                           showCategory
                           hero={fHero} setHero={setFHero} showHero
+                          library={heroLibrary(art)}
                         />
                       </td>
                     </tr>
@@ -1520,7 +1552,7 @@ const TABS: { key: 'categories' | 'articles' | 'users'; label: string }[] = [
   { key: 'users',      label: 'Users' },
 ]
 
-export default function AdminDashboard() {
+export default function AdminDashboard({ imageLibrary = false }: { imageLibrary?: boolean }) {
   const [activeTab, setActiveTab] = useState<'categories' | 'articles' | 'users'>('categories')
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [pendingCount, setPendingCount] = useState(0)
@@ -1550,7 +1582,7 @@ export default function AdminDashboard() {
       </div>
 
       {activeTab === 'categories' && <CategoriesTab onToast={showToast} />}
-      {activeTab === 'articles' && <ArticlesTab onToast={showToast} onPendingCount={setPendingCount} />}
+      {activeTab === 'articles' && <ArticlesTab onToast={showToast} onPendingCount={setPendingCount} imageLibrary={imageLibrary} />}
       {activeTab === 'users' && <UsersTab onToast={showToast} />}
 
       {toast && (

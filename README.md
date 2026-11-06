@@ -96,7 +96,8 @@ article styles. The `<>` toolbar button still exposes the raw HTML.
 
 ## Image library (hero images)
 
-The Edit page's hero image field can also **Choose from library**: curated photos from the Marketing
+The hero image field (on an article's Edit page, and in the admin dashboard's article form for new and
+existing articles) can also **Choose from library**: curated photos from the Marketing
 SharePoint *Image Repository*, imported as a snapshot. Selecting a photo opens a preview of the real
 article hero and tile (desktop / mobile) before it is applied; nothing is saved until "Save changes".
 
@@ -105,7 +106,9 @@ article hero and tile (desktop / mobile) before it is applied; nothing is saved 
   2400px JPEG plus a 480px thumbnail and records it. Re-run whenever marketing adds photos; unchanged files
   are skipped and removed ones are hidden.
 - No env setting: the option appears by itself once the table exists and the import has stored at least one
-  photo (`hasLibraryImages()` in `lib/imageLibraryDb.ts`). Until then the Edit page is unchanged.
+  photo (`hasLibraryImages()` in `lib/imageLibraryDb.ts`). Until then both forms are unchanged.
+- The preview is the staff-only `/admin/hero-preview` page, built entirely from the unsaved form, so it also works
+  for an article that has not been created yet.
 
 Rollout steps: [docs/handover/2026-11-kb-image-library.md](docs/handover/2026-11-kb-image-library.md).
 

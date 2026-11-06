@@ -70,6 +70,8 @@ export default async function ArticleEditPage({ params }: Props) {
                 initialReadTime={article.readTime}
                 versioning={versioning}
                 imageLibrary={imageLibrary}
+                effectiveVisibility={article.effectiveVisibility}
+                updatedAt={article.updatedAt}
               />
             </div>
             {versioning && (

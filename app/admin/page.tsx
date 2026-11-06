@@ -4,6 +4,7 @@ import SiteHeader from '@/components/SiteHeader'
 import Footer from '@/components/Footer'
 import Icon from '@/components/Icon'
 import { getSession } from '@/lib/auth'
+import { hasLibraryImages } from '@/lib/imageLibraryDb'
 import AdminDashboard from './AdminDashboard'
 
 export const dynamic = 'force-dynamic'
@@ -19,6 +20,8 @@ export default async function AdminPage() {
   if (!session || !session.email.endsWith('@nuvho.com')) {
     redirect('/login')
   }
+  // "Choose from library" on the article form's hero field, once the image library has photos
+  const imageLibrary = await hasLibraryImages()
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -35,7 +38,7 @@ export default async function AdminPage() {
               Content index
             </Link>
           </div>
-          <AdminDashboard />
+          <AdminDashboard imageLibrary={imageLibrary} />
         </div>
       </main>
       <Footer />
