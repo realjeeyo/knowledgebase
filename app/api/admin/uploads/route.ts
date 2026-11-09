@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { ALLOWED_TYPES, MAX_UPLOAD_BYTES, MAX_UPLOAD_MB, saveUpload, sniffType } from '@/lib/uploads'
+import { storageFailure } from '@/lib/fileStore.mjs'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -57,11 +58,13 @@ export async function POST(req: NextRequest) {
       filename: saved.filename,
       size: buf.length,
       type: mime,
-      // 'db' by default; 'local' only when UPLOAD_STORAGE=local (see lib/uploads.ts)
+      // 'sftp' in production, 'local' in development (lib/fileStore.mjs)
       backend: saved.backend,
     })
   } catch (err) {
     console.error('[admin/uploads POST]', err)
+    const failure = storageFailure(err)
+    if (failure) return NextResponse.json({ error: failure.error }, { status: failure.status })
     return NextResponse.json({ error: 'Could not store the file on the server.' }, { status: 500 })
   }
 }

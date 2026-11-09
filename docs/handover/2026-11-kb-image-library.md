@@ -28,6 +28,10 @@ Regions/Australia/Queensland (29), Regions/Australia/Sydney (18). Subfolders bec
 
 ## How it works
 
+> **Update 9 Nov 2026:** image bytes no longer live in Postgres. The import now saves the files in the
+> KB file store (SFTP to nuvho-vectordb) and adds only metadata rows to `nuvho_kb.uploads`. See
+> [2026-11-kb-image-files.md](2026-11-kb-image-files.md), including the SSH tunnel the import now needs.
+
 - `scripts/import-image-library.mjs` reads a **local copy** of the folder, resizes each photo with `sharp`
   (EXIF rotation applied, metadata incl. GPS stripped), and stores the 2400px image and the thumbnail as
   ordinary rows in `nuvho_kb.uploads` (`uploaded_by = 'image-library-import'`). It records each photo in

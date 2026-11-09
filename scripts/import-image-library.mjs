@@ -3,8 +3,8 @@
 //
 // Reads a local copy of the Marketing SharePoint "Image Repository" folder
 // (nuvhosystems › Documents › Nuvho Pty Ltd › Marketing › 6. Content › Image Repository),
-// resizes every photo and stores it in the KB database so editors can pick it as an
-// article hero on the Edit page.
+// resizes every photo, saves the files in the KB image store (lib/fileStore.mjs) and records
+// them in the KB database so editors can pick them as an article hero.
 //
 // Get the local copy with SharePoint's "Download" on the Image Repository folder (unzip it)
 // or by syncing the folder with OneDrive, then point this script at the Image Repository
@@ -21,8 +21,12 @@
 //   --quality <q>    JPEG quality, default 85.
 //   --keep-missing   Do not deactivate photos that are no longer in the folder.
 //
-// Needs DATABASE_URL (.env.local, then .env) and migrations 005_uploads.sql and
-// 008_image_library.sql applied. Re-runs are safe: unchanged files (same SHA-1) are skipped.
+// Needs DATABASE_URL and the image-store settings (UPLOAD_STORAGE=sftp plus SFTP_*), read from
+// .env.local then .env, and migrations 005, 008 and 009 applied. The SFTP port on nuvho-vectordb
+// listens on the private network only, so from a laptop open a tunnel first and point
+// SFTP_HOST/SFTP_PORT at it (docs/handover/2026-11-kb-image-files.md):
+//   ssh -N -L 12222:10.126.0.14:2222 root@209.38.90.132   → SFTP_HOST=127.0.0.1, SFTP_PORT=12222
+// Re-runs are safe: unchanged files (same SHA-1) are skipped.
 
 import { promises as fs } from 'fs'
 import path from 'path'
@@ -31,6 +35,7 @@ import dotenv from 'dotenv'
 import pg from 'pg'
 import sharp from 'sharp'
 import { toSourcePath, collectionOf, isImageFile, titleOf, creditOf } from './lib/library-names.mjs'
+import { createFileStore } from '../lib/fileStore.mjs'
 
 dotenv.config({ path: '.env.local' })
 dotenv.config()
@@ -100,14 +105,20 @@ async function render(buf, width, quality) {
   return { full: full.data, width: full.info.width, height: full.info.height, thumb }
 }
 
-async function insertUpload(client, buf) {
+/** Saves one JPEG in the file store; its metadata row is added later, in the transaction. */
+async function storeFile(store, buf) {
   const id = newUploadId()
+  const key = `${id}.jpg`
+  await store.put(key, buf)
+  return { id, key, size: buf.length, url: `/uploads/${key}` }
+}
+
+async function insertUpload(client, file) {
   await client.query(
-    `INSERT INTO nuvho_kb.uploads (id, ext, mime, size_bytes, data, uploaded_by)
-     VALUES ($1, 'jpg', 'image/jpeg', $2, $3, $4)`,
-    [id, buf.length, buf, IMPORTED_BY],
+    `INSERT INTO nuvho_kb.uploads (id, ext, mime, size_bytes, uploaded_by)
+     VALUES ($1, 'jpg', 'image/jpeg', $2, $3)`,
+    [file.id, file.size, IMPORTED_BY],
   )
-  return { id, url: `/uploads/${id}.jpg` }
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -120,11 +131,22 @@ async function main() {
   if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is not set (.env.local or .env).')
 
   const target = describeTarget(process.env.DATABASE_URL)
+  // No default here: rows written to a shared database must point at files the site serves,
+  // so the operator says which store the files go to (sftp for production).
+  if (!process.env.UPLOAD_STORAGE) {
+    throw new Error('Set UPLOAD_STORAGE: sftp (with the SFTP_* settings) for production, local only for a local test database.')
+  }
+  const store = createFileStore(process.env)
+  const filesTarget = store.driver === 'sftp'
+    ? `sftp://${process.env.SFTP_USER}@${process.env.SFTP_HOST}:${process.env.SFTP_PORT || 2222}${process.env.SFTP_ROOT}`
+    : `local folder ${path.resolve(process.env.UPLOADS_DIR || 'uploads')}`
   console.log(`Source : ${root}`)
   console.log(`Target : ${target}${opts.dryRun ? '  (dry run — nothing will be written)' : ''}`)
+  console.log(`Files  : ${filesTarget}`)
   if (!opts.dryRun && !opts.yes) {
-    console.log('\nRe-run with --yes to write to this database, or --dry-run to preview.')
+    console.log('\nRe-run with --yes to write to this database and file store, or --dry-run to preview.')
     process.exitCode = 1
+    store.close()
     return
   }
 
@@ -140,6 +162,7 @@ async function main() {
   const seen = new Set()
   const counts = { added: 0, updated: 0, unchanged: 0, reactivated: 0, failed: 0, deactivated: 0 }
   let bytesStored = 0
+  let storageStopped = false
 
   for (const rel of files) {
     const sourcePath = toSourcePath(rel)
@@ -181,11 +204,25 @@ async function main() {
       continue
     }
 
+    // Files first, then their rows in one transaction; if the rows fail, the files go again.
+    let full, thumb
+    try {
+      full = await storeFile(store, img.full)
+      thumb = await storeFile(store, img.thumb)
+    } catch (err) {
+      if (full) await store.remove(full.key).catch(() => {})
+      counts.failed++
+      console.error(`  ✗ ${sourcePath}: could not save the file (${err.message})`)
+      // Storage down or full: every later photo would fail the same way
+      if (err.name === 'StorageFullError' || err.name === 'StorageUnavailableError') { storageStopped = true; break }
+      continue
+    }
+
     const client = await pool.connect()
     try {
       await client.query('BEGIN')
-      const full = await insertUpload(client, img.full)
-      const thumb = await insertUpload(client, img.thumb)
+      await insertUpload(client, full)
+      await insertUpload(client, thumb)
       const title = titleOf(sourcePath)
       await client.query(
         `INSERT INTO nuvho_kb.image_library
@@ -208,6 +245,8 @@ async function main() {
       console.log(`  ${prev ? '~' : '+'} ${sourcePath}  (${img.width}×${img.height}, ${Math.round(img.full.length / 1024)} KB)`)
     } catch (err) {
       await client.query('ROLLBACK').catch(() => {})
+      await store.remove(full.key).catch(() => {})
+      await store.remove(thumb.key).catch(() => {})
       counts.failed++
       console.error(`  ✗ ${sourcePath}: ${err.message}`)
     } finally {
@@ -216,7 +255,8 @@ async function main() {
   }
 
   // Photos removed from the folder: hide from the picker, keep their URLs working.
-  if (!opts.keepMissing) {
+  // Skipped after a storage stop: the files after it were never looked at
+  if (!opts.keepMissing && !storageStopped) {
     const gone = [...existing.values()].filter(r => r.active && !seen.has(r.source_path))
     for (const r of gone) console.log(`  − ${r.source_path}`)
     counts.deactivated = gone.length
@@ -229,12 +269,14 @@ async function main() {
   }
 
   await pool.end()
+  store.close()
   console.log(
     `\n${opts.dryRun ? 'Would have: ' : ''}${counts.added} added, ${counts.updated} updated, ` +
     `${counts.reactivated} reactivated, ${counts.deactivated} deactivated, ` +
     `${counts.unchanged} unchanged, ${counts.failed} failed` +
     (opts.dryRun ? '' : ` — ${(bytesStored / 1048576).toFixed(1)} MB stored`),
   )
+  if (storageStopped) console.error('Stopped early: the image store is unavailable or full. Nothing was deactivated; re-run once it is fixed.')
   if (counts.failed) process.exitCode = 1
 }
 
