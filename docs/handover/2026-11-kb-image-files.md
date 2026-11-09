@@ -60,7 +60,22 @@ but every image answers 502 once the database bytes are gone, and uploads fail.
 The labels in the control panel may differ slightly; if you can't find the VPC section, compare
 with the Onboarding app's Settings page, which has it.
 
-**Do this next:** with the app in the VPC, set `DATABASE_URL`'s host to `10.126.0.14` instead of
+**Done 9 Nov 2026 (17:40 UTC):** the app connects from `10.126.0.23` with no login failures.
+Two lessons from the switch: the value must start with `postgresql://` with no quotes (otherwise pg
+connects to a host called `base`), and App Platform never shows an Encrypted value again, so keep
+the password in the password manager.
+
+**Cleanup 9 Nov 2026 (17:44 UTC):** removed the 10 `nuvho_kb_user` public-IP lines from
+`pg_hba.conf` and today's ufw rule for `170.64.220.102`. `nuvho_kb_user` is now allowed only
+from `10.0.0.0/8` and the MCP server (`209.38.84.236`). Backups: `pg_hba.conf.bak-20261109-kb-public`,
+`/root/backups/ufw-user.rules-20261109-kb-public`, `/root/backups/ufw-status-20261109-kb-public.txt`.
+**Kept on purpose:** the 9 other App Platform ufw rules (`170.64.*`, `134.199.158.105`,
+`134.199.162.177`, `168.144.168.142`) and their 54 pg_hba lines for the five vector-tier accounts
+(`nuvho_internal`, `_domain`, `_clients`, `_confidential`, `_support`). Something on App Platform
+that is not this KB code used those accounts from those IPs, most recently on 6 Nov 2026. Find that
+app, move it to the VPC, then remove them.
+
+With the app in the VPC, set `DATABASE_URL`'s host to `10.126.0.14` instead of
 `209.38.90.132` (same user, password, database and options). ufw and `pg_hba.conf` already allow
 `nuvho_kb_user` from `10.0.0.0/8`, so no server change is needed, and App Platform's changing
 egress IPs stop mattering. Afterwards the `170.64.*` / `134.199.*` / `168.144.*` KB egress entries
